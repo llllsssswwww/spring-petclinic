@@ -18,7 +18,22 @@ pipeline {
           sh   'mvn -Dmaven.tets.failure.ignore=true clean package'
       }
     }
-      stage('Docker Image') {
+      stage('Target ') {
+        steps {
+          echo 'Maven Build'
+          sshPublisher(publishers: [sshPublisherDesc(configName: 'target',
+          transfers: [sshTransfer(cleanRemote: false, excludes: '',
+          execCommand: '''fuser -k 8080/tcp
+          export BUILD_ID=PetClinic
+          nohup java -jar /home/ubuntu/deploy/spring-petclinic-2.7.3.jar >> nohub.out 2>>&1 &''',
+          execTimeout: 120000, flatten: false, makeEmptyDirs: false,
+          noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: 'deploy', remoteDirectorySDF: false,
+          removePrefix: 'target', sourceFiles: 'target/*.jar')], usePromotionTimestamp: false,
+          useWorkspaceInPromotion: false, verbose: false)])
+          sh   'mvn -Dmaven.tets.failure.ignore=true clean package'
+      }
+    }        
+        stage('Docker Image') {
         steps {
           echo 'Docker Image'
       }
